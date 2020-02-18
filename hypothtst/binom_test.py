@@ -10,6 +10,10 @@ def binom_tst_beta(p_null=0.5,p_alt=0.6,n=10,alpha_hat=0.05):
     return binom.cdf(x_a,n,p_alt)
 
 
+def binom_tst_alpha(hat_alpha=0.5,p=0.4,n=10):
+    return binom.sf(binom.isf(hat_alpha,p=p,n=n),p=p,n=n)
+
+
 def binom_tst_beta_sim(p_null=0.5,p_alt=0.6,n=10,alpha_hat=0.05,n_sim=1000):
     #Generate from the alternate.
     rvs = binom.rvs(n,p_alt,size=n_sim)

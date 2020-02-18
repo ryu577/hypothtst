@@ -1,10 +1,11 @@
 import numpy as np
 from scipy.stats import poisson
-from stochproc.hypothesis.hypoth_tst_simulator import run_simulns
+from hypothtst.hypoth_tst_simulator import run_simulns
 from stochproc.count_distributions.compound_poisson import CompoundPoisson
-import stochproc.hypothesis.rate_test as xtst
+import hypothtst.rate_test as xtst
+import hypothtst.binom_test as btst
 import stochproc.qq_plots.compound_poisson_distribns as cpd
-import stochproc.hypothesis.neg_binom_tst as nbt
+import hypothtst.neg_binom_tst as nbt
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -22,7 +23,6 @@ def plot_alpha_hats_w_alpha_determinst_poisson():
 												lmb=10.0,t1=10,t2=10,l=5)
 	alphas6,alpha_hats6,pois_mas = xtst.UMPPoisson.alpha_on_determinist_compound_closed_form(\
 												lmb=10.0,t1=10,t2=10,l=6)
-
 	color_list = sns.color_palette("RdBu_r", 6)
 	color_list = color_list.as_hex()
 	plt.plot(alpha_hats1,alphas1,label='l=1',color=color_list[0])
@@ -123,6 +123,8 @@ def binom_tst_on_nbd_beta():
 	plt.plot(ts,betas_t)
 	plt.show()
 
-
+def plot_binom_alpha_alpha_hat():
+    hat_alphas = np.arange(0.001,1.0,0.0001)
+    btst.binom_tst_alpha(hat_alphas,p=0.1,n=10)
 
 
