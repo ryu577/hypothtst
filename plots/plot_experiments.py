@@ -4,10 +4,13 @@ from hypothtst.hypoth_tst_simulator import run_simulns
 from stochproc.count_distributions.compound_poisson import CompoundPoisson
 import hypothtst.rate_test as xtst
 import hypothtst.binom_test as btst
-import stochproc.qq_plots.compound_poisson_distribns as cpd
+import hypothtst.aa_plots.compound_poisson_distribns as cpd
 import hypothtst.neg_binom_tst as nbt
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+import pyray.plotting.matplot_utils as matplot_utils
+from pyray.plotting.matplot_utils import newline
 
 
 def plot_alpha_hats_w_alpha_determinst_poisson():
@@ -123,8 +126,37 @@ def binom_tst_on_nbd_beta():
 	plt.plot(ts,betas_t)
 	plt.show()
 
+def make_qq_plot(p,poisson_mu,black_plot=False,use_heatmap=True,l_vals=None):
+        if use_heatmap and l_vals is None:
+            l_vals = np.array([3,5,7,11,13,17,19,23,31,37,41,43,47,53,59,61,67,71,73,79,83,101,113,137])
+        elif l_vals is None:
+            l_vals = np.array([3,5,7,11,13,17,19,23,31])
+        # See: https://seaborn.pydata.org/tutorial/color_palettes.html
+        color_list = sns.color_palette("RdBu_r", len(l_vals))
+        color_list = color_list.as_hex()
+        for l in range(len(l_vals)):
+            alphas, alpha_hats = CompBinom.qq_comp_binom_poiss_comp_determn_poiss(\
+                                            l_vals[l],p,poisson_mu)
+            if not use_heatmap:
+                plt.plot(alpha_hats, alphas, label='l= '+str(l_vals[l]))#,color=color_list[l])
+            else:
+                plt.plot(alpha_hats, alphas, label='l= '+str(l_vals[l]),color=color_list[l])
+        p1 = [0,0]
+        p2 = [1,1]
+        matplot_utils.newline(p1,p2)
+        plt.legend()
+        #plt.title("QQ plot between compound binomial and deterministically \
+        #                compounded process")
+        plt.xlabel("Deterministically compounded Poisson quantile")
+        plt.ylabel("Binomially compounded Poisson quantile")
+        plt.show()
+
+## Taken from aa_plots
 def plot_binom_alpha_alpha_hat():
     hat_alphas = np.arange(0.001,1.0,0.0001)
-    btst.binom_tst_alpha(hat_alphas,p=0.1,n=10)
+    alphas = btst.binom_tst_alpha(hat_alphas,p=0.1,n=10)
+    plt.plot(hat_alphas,alphas)
+    plt.plot([0,1],[0,1],'ro-')
+    plt.show()
 
 

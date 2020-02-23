@@ -3,8 +3,6 @@ from scipy.stats import nbinom, binom_test, poisson
 from stochproc.count_distributions.negative_binomial import NegativeBinomial
 from scipy.stats import norm
 import matplotlib.pyplot as plt
-#TODO: Move plotting code to plots.py and remove dependency on pyray.
-from pyray.plotting.matplot_utils import newline
 
 
 class CompareTests():
@@ -57,7 +55,8 @@ class CompareTests():
         plt.plot(c.alphas_rate,c.betas_rate,label='rate test')
         p1 = [1,0]
         p2 = [0,1]
-        newline(p1,p2)
+        ## Depends on pyray. Find pure matplotlib alternative.
+        #newline(p1,p2)
         plt.xlabel('Alpha')
         plt.ylabel('Beta')
         plt.legend()

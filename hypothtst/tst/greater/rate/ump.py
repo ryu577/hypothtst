@@ -1,14 +1,21 @@
 import numpy as np
-from scipy.special import comb
 from scipy.stats import binom_test, poisson, binom, nbinom
-from stochproc.hypothesis.binom_test import binom_tst_beta
-from scipy import optimize
+from scipy.special import comb
+from hypothtst.tst.greater.p_heads.binom_test import binom_tst_beta
+import hypothtst.sim_utils.rate.poisson as pois
 
+
+rate_tst = lambda n1,n2,t1,t2,alternative,scale=1.0: binom_test(n2/scale,(n1+n2)/scale,\
+        t2/(t1+t2),alternative=alternative)
 
 class UMPPoisson(object):
+    def __init__(self,t1=25,t2=25,lmb_base=12,alpha=0.05,effect=3):
+        self.t1,self.t2,self.lmb_base,self.alpha,self.effect=\
+            t1,t2,lmb_base,alpha,effect
+    
     @staticmethod
-    def beta_on_poisson(t1=25,t2=25,lmb_base=12,alpha=0.05,effect=3,
-                        thresh=None,n=10000):
+    def beta_on_poisson_sim(t1=25,t2=25,lmb_base=12,alpha=0.05,effect=3,
+                        thresh=None,n_sim=10000):
         """
         Obtains the beta (false negative rate) given the observation
         durations for treatment and control and hypothesis test to simulate.
@@ -21,8 +28,8 @@ class UMPPoisson(object):
         if thresh is None:
             thresh = np.array([alpha])
         ## Find all betas at various values of alpha.
-        betas = 1-est_rejection_rate(lmb1=lmb_base,lmb2=lmb_base+effect,t1=t1,t2=t2,
-                                    fn=UMPPoisson.poisson_one_sim,thresh=thresh,n=n)
+        ps = pois.Poisson(lmb_base,lmb_base+effect,t1,t2)
+        betas = 1-ps.rejection_rate(n_sim=n_sim)
         # Select the beta at the alpha level that gives us 5% false positive rate.
         ##TODO: Change this to closest instead of exact match.
         beta = betas[thresh==alpha][0]
@@ -57,9 +64,9 @@ class UMPPoisson(object):
                 lmb_base=12,effect=3,alpha=0.05):
         beta=0; n=0
         beta_n=0; beta_del=0
-        p=lmb_base*t1/(lmb_base*t1+(lmb_base+effect)*t2)
+        #p=lmb_base*t1/(lmb_base*t1+(lmb_base+effect)*t2)
         q=t1/(t1+t2)
-        mu_1 = t1*(lmb_base+effect); mu_2 = t2*lmb_base
+        #mu_1 = t1*(lmb_base+effect); mu_2 = t2*lmb_base
         poisson_mu = lmb_base*t1+(lmb_base+effect)*t2
         int_poisson_mu = int(poisson_mu)
         n = int_poisson_mu-1
@@ -108,7 +115,8 @@ class UMPPoisson(object):
     def beta_on_negbinom_closed_form(t1=25,t2=25,\
                 theta_base=10,m=100.0,deltheta=3,alpha=0.05,cut_dat=1e4):
         del_lmb = m*deltheta/theta_base/(theta_base-deltheta)
-        return UMPPoisson.beta_on_negbinom_closed_form2(t1,t2,theta_base,m,del_lmb,alpha,cut_dat)
+        return UMPPoisson.beta_on_negbinom_closed_form2(t1,t2,\
+                    theta_base,m,del_lmb,alpha,cut_dat)
 
     @staticmethod
     def beta_on_negbinom_closed_form2(t1=25,t2=25,\
@@ -117,7 +125,7 @@ class UMPPoisson(object):
         beta_n=0; beta_del=0
         q=t1/(t1+t2)
         lmb_base = m/theta_base
-        mu_1 = t1*(lmb_base+effect); mu_2 = t2*lmb_base
+        #mu_1 = t1*(lmb_base+effect); mu_2 = t2*lmb_base
         p1 = theta_base/(theta_base+t1)
         del_theta = theta_base**2*effect/(m+theta_base*effect)
         theta2=theta_base-del_theta
@@ -240,140 +248,8 @@ class UMPPoisson(object):
             k-=1            
         return alphas, alpha_hats, total_pois_mass
 
-    @staticmethod
-    def poisson_one_sim(lmb1,t1,lmb2,t2,alternative='greater'):
-        """
-        Simulates data from two Poisson distributions
-        and finds the p-value for a one-sided test.
-        args:
-            lmb1: The failure rate for first population.
-            t1: The time observed for first population.
-            lmb2: The failure rate for second population.
-            t2: The time observed for second population
-        """
-        n1 = poisson.rvs(lmb1*t1)
-        n2 = poisson.rvs(lmb2*t2)
-        p_val = binom_test(n2,n1+n2,t2/(t1+t2),alternative=alternative)
-        return p_val
-
 
 def p_n1(t1, t2, n1, n2):
     n=n1+n2; t=t1+t2
     return t1**n1*t2**n2/(t**n*comb(n,n1))
-
-
-def rateratio_test(n1,t1,n2,t2,scale=1.0):
-    n2, n1 = n2/scale, n1/scale
-    p_val = binom_test(n2,n1+n2,t2/(t1+t2),alternative='greater')
-    return p_val
-
-
-def est_rejection_rate(lmb1=12.0, lmb2=12.0,
-                        t1=2.5, t2=2.5, n=10000,
-                        thresh=np.arange(0.001,1.0,0.01),
-                        fn=UMPPoisson.poisson_one_sim):
-    """
-    Given various values of alpha, gets the percentage of time
-    the second sample is deemed to have a greater AIR than the
-    first sample.
-    args:
-        lmb1: The failure rate of the first population.
-        lmb2: The failure rate of the second population.
-        t1: The time data is collected for first population.
-        t2: The time data is collected for the second population.
-        n: The number of simulations.
-        thresh: The alpha levels.
-        fn: The test to generate simulated p_value.
-            for example: simulate_binned_t_test, simulate_rateratio_test.
-    """
-    reject_rate=np.zeros(len(thresh))
-    for _ in range(n):
-        #n1 is control, n2 is treatment.
-        p_val = fn(lmb1,t1,lmb2,t2)
-        reject_rate+=(p_val<thresh)
-    return reject_rate/n
-
-
-def bake_time(t1=25,
-                lmb_base=12,alpha=0.05,
-                beta=0.05,effect=3,n=1000):
-    t2=1.0; beta_tmp=1.0
-    betas = []
-    while beta_tmp>beta:
-        beta_tmp = UMPPoisson.beta_on_poisson(t1=t1,t2=t2,\
-                    lmb_base=lmb_base,
-                    alpha=alpha,effect=effect,n=n)
-        betas.append(beta_tmp)
-        t2+=1
-    return t2, np.array(betas)
-
-
-def bake_time_v2(t1=25,
-                    lmb_base=12,alpha=0.05,
-                    beta=0.05,effect=3):
-    t2=1.0; beta_tmp=1.0
-    betas = []
-    while beta_tmp>beta:
-        beta_tmp = UMPPoisson.beta_on_poisson_closed_form(t1=t1,t2=t2,\
-                    lmb_base=lmb_base,
-                    alpha=alpha,effect=effect)[0]
-        betas.append(beta_tmp)
-        t2+=1
-    return t2, np.array(betas)
-
-
-def bake_time_v3(t1=25,
-                    lmb_base=12,alpha=0.05,
-                    beta=0.05,effect=3):
-    fn = lambda t2: UMPPoisson.beta_on_poisson_closed_form(t1=t1,t2=t2,\
-                        lmb_base=lmb_base,
-                        alpha=alpha,effect=effect)[0]-beta
-    if fn(100)*fn(.01)>0:
-        return 100
-    root = optimize.bisect(fn,.01,200)
-    #root = optimize.root(fn,x0=5).x[0]
-    return root
-
-
-def experiments():
-    ##t1 and t2 are in 100-VM-days
-    ### lmb_base: 1 failure per 100-VM-days.
-    ## 10 nodes per hw and 10 VMs per node. So, 100 VMs per day.
-
-    UMPPoisson.beta_on_poisson_closed_form(t1=1.0,t2=1.0,\
-                            lmb_base=20,\
-                            alpha=0.1,effect=20)
-
-    ## We need 20 events per 100-VM-days.
-
-    n=660
-    UMPPoisson.beta_on_poisson_closed_form(t1=n/10,t2=n/10,\
-                            lmb_base=20,\
-                            alpha=0.1,effect=20*.1)
-
-
-    UMPPoisson.beta_on_poisson_closed_form2(t1=1.0,t2=1.0,\
-                            lmb_base=20,\
-                            alpha=0.1,effect=20)
-
-
-    import matplotlib.pyplot as plt
-
-    res=UMPPoisson.beta_on_negbinom_closed_form2(t1=200,t2=200,cut_dat=1000)
-    plt.plot(res[2],res[1])
-    plt.axvline(res[3])
-    plt.show()
-
-
-import matplotlib.pyplot as plt
-
-def binom_partial_sum(n,p=.5):
-    b_sum=0
-    for j in range(int(n/1.5)+1):
-        b_sum+=comb(n,j)*(1+p)**j
-    return b_sum/(2+p)**n
-
-if __name__ == '__main__':
-    sums = np.array([binom_partial_sum(i,p=0.4) for i in range(11,501,2)])
-    plt.plot(np.arange(11,501,2),sums)
 
