@@ -3,18 +3,19 @@ from scipy.stats import binom_test, poisson, binom, nbinom
 from scipy.special import comb
 from hypothtst.tst.greater.p_heads.binom_test import binom_tst_beta
 import hypothtst.sim_utils.rate.poisson as pois
+from hypothtst.alpha_beta_sim import AlphaBetaSim
 
-
-rate_tst = lambda n1,n2,t1,t2,alternative,scale=1.0: binom_test(n2/scale,(n1+n2)/scale,\
+def rate_tst(n1,n2,t1,t2,alternative,scale=1.0):
+    return binom_test(n2/scale,(n1+n2)/scale,\
         t2/(t1+t2),alternative=alternative)
 
 class UMPPoisson(object):
-    def __init__(self,t1=25,t2=25,lmb_base=12,alpha=0.05,effect=3):
-        self.t1,self.t2,self.lmb_base,self.alpha,self.effect=\
-            t1,t2,lmb_base,alpha,effect
+    def __init__(self,t0=25,t1=25,lmb_base=12,alpha=0.05,effect=3):
+        self.t0,self.t1,self.lmb_base,self.alpha,self.effect=\
+            t0,t1,lmb_base,alpha,effect
     
     @staticmethod
-    def beta_on_poisson_sim(t1=25,t2=25,lmb_base=12,alpha=0.05,effect=3,
+    def beta_on_poisson_sim(t0=25,t1=25,lmb_base=12,alpha=0.05,effect=3,
                         thresh=None,n_sim=10000):
         """
         Obtains the beta (false negative rate) given the observation
@@ -27,14 +28,79 @@ class UMPPoisson(object):
         """
         if thresh is None:
             thresh = np.array([alpha])
-        ## Find all betas at various values of alpha.
-        ps = pois.Poisson(lmb_base,lmb_base+effect,t1,t2)
-        betas = 1-ps.rejection_rate(n_sim=n_sim)
-        # Select the beta at the alpha level that gives us 5% false positive rate.
-        ##TODO: Change this to closest instead of exact match.
-        beta = betas[thresh==alpha][0]
+        po0=pois.PoissonDist(lmb_base*t0)
+        po1=pois.PoissonDist((lmb_base+effect)*t1)
+        tst = lambda n0,n1:binom_test(n1,n0+n1,t1/(t0+t1),\
+                    alternative='greater')
+        ab = AlphaBetaSim()
+        _, _ = ab.alpha_beta_tracer(po0,po1,tst,\
+                n_sim=10000)
+        beta = ab.beta(alpha)
         return beta
 
+    @staticmethod
+    def beta(null, alter, cut_dat=1e4,alpha=0.05):
+        beta=0; n=0
+        beta_n=0; beta_del=0
+        q=null.t/(null.t+alter.t)
+        poisson_mu = null.e_lmb*null.t+(alter.e_lmb)*alter.t
+        int_poisson_mu = int(poisson_mu)
+        n = int_poisson_mu-1
+        dels1 = []; ns1=[]
+        nbinom_s1={}; nbinom_s2={}
+        while (beta_del > 1e-9 or n==int_poisson_mu-1):
+            n+=1
+            if n-int_poisson_mu>cut_dat:
+                break
+            surv_inv = int(binom.isf(alpha,n,q))
+            beta_del=0
+            for j in range(surv_inv+1):
+            #for j in range(n+1):
+                if j in nbinom_s1:
+                    nb1 = nbinom_s1[j]
+                else:
+                    nb1 = null.pmf(j)
+                    nbinom_s1[j] = nb1
+                if n-j in nbinom_s2:
+                    nb2 = nbinom_s2[n-j]
+                else:
+                    nb2 = alter.pmf(n-j)
+                    nbinom_s2[n-j] = nb2
+                beta_n = nb1*nb2
+                beta_del+=beta_n
+                beta += beta_n
+            dels1.append(beta_del); ns1.append(n)
+        n = int_poisson_mu
+        dels2 = []; ns2=[]
+        while beta_del > 1e-9 or n==int_poisson_mu:
+            n-=1
+            if int_poisson_mu-n>cut_dat:
+                break
+            surv_inv = int(binom.isf(alpha,n,q))
+            beta_del=0
+            for j in range(surv_inv+1):
+            #for j in range(n+1):
+                if j in nbinom_s1:
+                    nb1 = nbinom_s1[j]
+                else:
+                    nb1 = null.pmf(j)
+                    nbinom_s1[j] = nb1
+                if n-j in nbinom_s2:
+                    nb2 = nbinom_s2[n-j]
+                else:
+                    nb2 = alter.pmf(n-j)
+                    nbinom_s2[n-j] = nb2
+                beta_n = nb1*nb2
+                beta_del+=beta_n
+                beta += beta_n
+            dels2.append(beta_del); ns2.append(n)
+        dels1 = np.array(dels1); dels2 = np.array(dels2)
+        dels2 = dels2[::-1]
+        ns1 = np.array(ns1); ns2 = np.array(ns2); ns2 = ns2[::-1]
+        ns = np.concatenate((ns2,ns1),axis=0)
+        dels = np.concatenate((dels2,dels1),axis=0)
+        return beta, dels, ns, int_poisson_mu
+    
     @staticmethod
     def beta_on_poisson_closed_form(t1=25,t2=25,\
                 lmb_base=12,effect=3,alpha=0.05,tol=1e-7):
@@ -62,6 +128,10 @@ class UMPPoisson(object):
     @staticmethod
     def beta_on_poisson_closed_form2(t1=25,t2=25,\
                 lmb_base=12,effect=3,alpha=0.05):
+        """
+        Much, much slower than beta_on_poisson_closed_form. 
+        Included only for demonstration of alternate summation.
+        """
         beta=0; n=0
         beta_n=0; beta_del=0
         #p=lmb_base*t1/(lmb_base*t1+(lmb_base+effect)*t2)
@@ -75,7 +145,8 @@ class UMPPoisson(object):
             surv_inv = int(binom.isf(alpha,n,q))
             beta_del=0
             for j in range(surv_inv+1):
-                beta_n = poisson.pmf(j,(lmb_base+effect)*t2)*poisson.pmf(n-j,lmb_base*t1)
+                beta_n = poisson.pmf(j,(lmb_base+effect)*t2)*\
+                        poisson.pmf(n-j,lmb_base*t1)
                 beta_del+=beta_n
                 beta += beta_n
         n = int_poisson_mu
@@ -84,7 +155,8 @@ class UMPPoisson(object):
             surv_inv = int(binom.isf(alpha,n,q))
             beta_del=0
             for j in range(surv_inv+1):
-                beta_n = poisson.pmf(j,(lmb_base+effect)*t2)*poisson.pmf(n-j,lmb_base*t1)
+                beta_n = poisson.pmf(j,(lmb_base+effect)*t2)*\
+                        poisson.pmf(n-j,lmb_base*t1)
                 beta_del+=beta_n
                 beta += beta_n
         return beta
@@ -120,7 +192,8 @@ class UMPPoisson(object):
 
     @staticmethod
     def beta_on_negbinom_closed_form2(t1=25,t2=25,\
-                theta_base=10,m=100.0,effect=3,alpha=0.05,cut_dat=1e4):
+                theta_base=10,m=100.0,effect=3,alpha=0.05,\
+                cut_dat=1e4):
         beta=0; n=0
         beta_n=0; beta_del=0
         q=t1/(t1+t2)
@@ -231,7 +304,8 @@ class UMPPoisson(object):
             alpha_dels = pmf*cdfs
             alphas += alpha_dels
             if verbose and (k-int(lmb*(t1+t2)))%100==0:
-                print("k="+str(k-int(lmb*(t1+t2)))+" alpha_dels sum: " + str(sum(alpha_dels)))
+                print("k="+str(k-int(lmb*(t1+t2)))+" alpha_dels sum: " \
+                    + str(sum(alpha_dels)))
             k+=1
         if verbose:
             print("Completed first loop")
