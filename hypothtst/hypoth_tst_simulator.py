@@ -32,7 +32,8 @@ def alpha_beta_curve(rvs_fn, n_sim=10000, lmb=20, t1=10, t2=3, \
     return alphas, betas, alpha_hats
 
 
-def alpha_beta_tracer(rvs_fn_1, rvs_fn_2, t1=10, t2=10, n_sim=10000, scale=1.0, hypoth_tst=rateratio_test):
+def alpha_beta_tracer(rvs_fn_1, rvs_fn_2, t1=10, t2=10, n_sim=10000, \
+                        scale=1.0, hypoth_tst=rateratio_test):
     ## First the null hypothesis..
     alpha_hats = np.concatenate((np.arange(0.000000000001,0.0099,0.0000001),
                                         np.arange(0.01,1.00,0.001), 
@@ -64,7 +65,8 @@ def dist_rvs_interarrivalw(lmb_target=20,t=20):
     return iw.rvs1()
 
 
-def run_simulns(fn, n_sim=50000, lmb=20.0, t1=10.0, t2=3.0, scale=1.0):
+def run_simulns(fn, n_sim=50000, lmb=20.0, t1=10.0, \
+                    t2=3.0, scale=1.0):
     time1=datetime.now()
     alphas1,betas1,alpha_hats1 = alpha_beta_curve(fn, 
                                     n_sim=n_sim, 
