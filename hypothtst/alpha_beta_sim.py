@@ -16,9 +16,9 @@ class AlphaBetaSim(object):
                 np.arange(0.01,1.00,0.001), 
                 np.arange(0.991,1.00,0.001)),axis=0)
     
-    def alpha_beta_tracer(self,null,alter,tst,n_sim=10000,debug=True):
-        self.alphas = self.rejection_rate(null,null,tst,n_sim)
-        self.betas = 1-self.rejection_rate(null,alter,tst,n_sim,debug=debug)
+    def alpha_beta_tracer(self,null,alter,tst_null,tst_alt,n_sim=10000,debug=True):
+        self.alphas = self.rejection_rate(null,null,tst_null,n_sim)
+        self.betas = 1-self.rejection_rate(null,alter,tst_alt,n_sim,debug=debug)
         return self.alphas, self.betas
 
     def rejection_rate(self,dist1,dist2,tst,n_sim=10000,debug=False):
