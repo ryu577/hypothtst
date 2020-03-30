@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import t, ttest_ind, norm
+from scipy.stats import t, ttest_ind, norm, cauchy
 
 
 def t_test(mu1,mu2,std1,std2,n1,n2,dist=t,alternative='two-sided'):
@@ -43,10 +43,22 @@ class Norm_null():
         self.sig=sig
     
     def cdf(self,x,df):
-        return norm.cdf(x)
+        return norm.cdf(x,self.mu,self.sig)
 
     def sf(self,x,df):
-        return norm.sf(x)
+        return norm.sf(x,self.mu,self.sig)
+
+
+class Cauchy_null():
+    def __init__(self,loc=0,scl=1):
+        self.loc=loc
+        self.scl=scl
+
+    def cdf(self,x,df):
+        return cauchy.cdf(x,self.loc,self.scl)
+
+    def sf(self,x,df):
+        return cauchy.sf(x,self.loc,self.scl)
 
 
 def sanity_check():
