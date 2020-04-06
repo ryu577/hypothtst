@@ -3,7 +3,7 @@ from scipy.stats import poisson
 from hypothtst.hypoth_tst_simulator import run_simulns
 from stochproc.count_distributions.compound_poisson import CompoundPoisson
 import hypothtst.rate_test as xtst
-import hypothtst.binom_test as btst
+import hypothtst.tst.stochparams.p_heads.binom_test as btst
 import hypothtst.aa_plots.compound_poisson_distribns as cpd
 import hypothtst.neg_binom_tst as nbt
 import matplotlib.pyplot as plt
@@ -157,6 +157,8 @@ def plot_binom_alpha_alpha_hat():
     alphas = btst.binom_tst_alpha(hat_alphas,p=0.1,n=10)
     plt.plot(hat_alphas,alphas)
     plt.plot([0,1],[0,1],'ro-')
+    plt.xlabel("hat_alpha")
+    plt.ylabel("alpha")
     plt.show()
 
 

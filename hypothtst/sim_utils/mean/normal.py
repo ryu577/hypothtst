@@ -13,4 +13,3 @@ class NormDist():
         else:
             return norm.rvs(self.mu,self.sigma)
 
-

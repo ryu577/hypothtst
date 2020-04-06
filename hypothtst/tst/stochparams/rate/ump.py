@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import binom_test, poisson, binom, nbinom
 from scipy.special import comb
-from hypothtst.tst.greater.p_heads.binom_test import binom_tst_beta
+from hypothtst.tst.stochparams.p_heads.binom_test import binom_tst_beta
 import hypothtst.sim_utils.rate.poisson as pois
 from hypothtst.alpha_beta_sim import AlphaBetaSim
 
@@ -55,7 +55,6 @@ class UMPPoisson(object):
             surv_inv = int(binom.isf(alpha,n,q))
             beta_del=0
             for j in range(surv_inv+1):
-            #for j in range(n+1):
                 if j in nbinom_s1:
                     nb1 = nbinom_s1[j]
                 else:
@@ -79,7 +78,6 @@ class UMPPoisson(object):
             surv_inv = int(binom.isf(alpha,n,q))
             beta_del=0
             for j in range(surv_inv+1):
-            #for j in range(n+1):
                 if j in nbinom_s1:
                     nb1 = nbinom_s1[j]
                 else:
@@ -280,7 +278,8 @@ class UMPPoisson(object):
         mode1 = int(p1*(m-1)/(1-p1))
         beta = 0; del_beta = 1
         while del_beta>1e-7 or neg_binom_ix<mode1 or neg_binom_ix<1000:
-            del_beta = nbinom.pmf(neg_binom_ix,m,p2)*nbinom.sf(neg_binom_ix-1,m,p1)
+            del_beta = nbinom.pmf(neg_binom_ix,m,p2)*\
+                        nbinom.sf(neg_binom_ix-1,m,p1)
             beta += del_beta
             neg_binom_ix+=1
         return beta
@@ -304,7 +303,7 @@ class UMPPoisson(object):
             alpha_dels = pmf*cdfs
             alphas += alpha_dels
             if verbose and (k-int(lmb*(t1+t2)))%100==0:
-                print("k="+str(k-int(lmb*(t1+t2)))+" alpha_dels sum: " \
+                print("k="+str(k-int(lmb*(t1+t2))) + " alpha_dels sum: "\
                     + str(sum(alpha_dels)))
             k+=1
         if verbose:
@@ -319,11 +318,11 @@ class UMPPoisson(object):
             if np.isnan(sum(alpha_dels)):
                 print(k)
             alphas += alpha_dels
-            k-=1            
+            k-=1
         return alphas, alpha_hats, total_pois_mass
 
 
-def p_n1(t1, t2, n1, n2):
-    n=n1+n2; t=t1+t2
-    return t1**n1*t2**n2/(t**n*comb(n,n1))
+def p_n1(t0, t1, n0, n1):
+    n=n0+n1; t=t0+t1
+    return t0**n0*t1**n1/(t**n*comb(n,n0))
 
