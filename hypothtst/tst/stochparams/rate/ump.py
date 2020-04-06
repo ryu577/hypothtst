@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import binom_test, poisson, binom, nbinom
 from scipy.special import comb
+from scipy import optimize
 from hypothtst.tst.stochparams.p_heads.binom_test import binom_tst_beta
 import hypothtst.sim_utils.rate.poisson as pois
 from hypothtst.alpha_beta_sim import AlphaBetaSim
@@ -34,7 +35,7 @@ class UMPPoisson(object):
                     alternative='greater')
         ab = AlphaBetaSim()
         _, _ = ab.alpha_beta_tracer(po0,po1,tst,\
-                n_sim=10000)
+                tst,n_sim=10000)
         beta = ab.beta(alpha)
         return beta
 
@@ -320,6 +321,18 @@ class UMPPoisson(object):
             alphas += alpha_dels
             k-=1
         return alphas, alpha_hats, total_pois_mass
+
+    @staticmethod
+    def alpha_on_poisson_with_linesrch(t1=25,t2=25,\
+                lmb_base=12,effect=3,beta=0.15,tol=1e-7):
+        fn = lambda alpha: UMPPoisson.beta_on_poisson_closed_form(t1=t1,t2=t2,\
+                        lmb_base=lmb_base,
+                        alpha=alpha,effect=effect)[0]-beta
+        ## TODO: Since we know the curve is convex, the root will probably be
+        ## smaller than bisection point. Take this into account for efficiency.
+        root = optimize.bisect(fn,0.0,1.0)
+        #root = optimize.root(fn,x0=5).x[0]
+        return root
 
 
 def p_n1(t0, t1, n0, n1):
