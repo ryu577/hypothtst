@@ -334,6 +334,14 @@ class UMPPoisson(object):
         #root = optimize.root(fn,x0=5).x[0]
         return root
 
+    @staticmethod
+    def beta_alpha_curve_on_poisson(t1=25,t2=25,lmb_base=12,effect=3):
+        alphas = np.arange(0,1,0.05)
+        betas = []
+        for alp in alphas:
+            betas.append(UMPPoisson.beta_on_poisson_closed_form(t1,t2,lmb_base,effect,alp)[0])
+        return alphas, np.array(betas)
+
 
 def p_n1(t0, t1, n0, n1):
     n=n0+n1; t=t0+t1
