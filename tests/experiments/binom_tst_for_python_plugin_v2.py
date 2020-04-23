@@ -9,8 +9,7 @@ def binom_test_v2(x, n=None, p=0.5, alternative='two-sided'):
         raise ValueError("p must be in range [0,1]")
 
     if alternative not in ('two-sided', 'less', 'greater'):
-        raise ValueError("alternative not recognized\n"
-                         "should be 'two-sided', 'less' or 'greater'")
+        raise ValueError("alternative not recognized\n should be 'two-sided', 'less' or 'greater'")
     if alternative == 'less':
         pval = binom.cdf(x, n, p)
         return pval
