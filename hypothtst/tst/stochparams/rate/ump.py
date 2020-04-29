@@ -335,8 +335,8 @@ class UMPPoisson(object):
         return root
 
     @staticmethod
-    def beta_alpha_curve_on_poisson(t1=25,t2=25,lmb_base=12,effect=3):
-        alphas = np.arange(0,1,0.05)
+    def beta_alpha_curve_on_poisson(t1=25,t2=25,lmb_base=12,effect=3,n_pts=100):
+        alphas = np.arange(0,1+1/n_pts,1/n_pts)
         betas = []
         for alp in alphas:
             betas.append(UMPPoisson.beta_on_poisson_closed_form(t1,t2,lmb_base,effect,alp)[0])
