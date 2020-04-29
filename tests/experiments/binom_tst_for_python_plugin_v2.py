@@ -55,4 +55,6 @@ def binary_search(a, d, lo, hi, asc_order=False):
 result=df
 result["p_value"] = result.apply(lambda row : binom_test(row.Events_B,row.Events_A + row.Events_B,row.Uptime_B/(row.Uptime_A +row.Uptime_B),alternative='greater'), axis=1)
 result["p_value_two_sided"] = result.apply(lambda row : binom_test_v2(row.Events_B,row.Events_A + row.Events_B,row.Uptime_B/(row.Uptime_A +row.Uptime_B)), axis=1 )
+result["confidence_two_sided"] = 1-result["p_value_two_sided"]**.33
+result["confidence"] = 1-result["p_value"]**.33
 
