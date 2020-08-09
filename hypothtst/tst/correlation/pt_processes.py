@@ -35,3 +35,26 @@ def correlation_score(ts1,ts2,w,delt,verbose=False):
         print(str(evnts)+","+str(len(ts2))+","+str(interv/delt))
     return binom_test(evnts,len(ts2),interv/delt,alternative='greater')
 
+
+########################################
+## Functional tests
+
+def tst_critical_interv():
+    ##### For critical interval.
+    res = critical_interval([1,2,3],1,4)
+    print(res==3)
+    res = critical_interval([1,3],-5,4)
+    print(res==3)
+    res = critical_interval([1,3],-5,4)
+    print(res==3)
+    res = critical_interval([1,3],1,4)
+
+def tst_critical_evnts():
+    ##### For critical events.
+    res = critical_events([1,2,3],[.5,1.5,2.5],.5)
+    print(res==0)
+    res = critical_events([1,2,3],[.5,1.5,2.5],1)
+    print(res==2)
+    res = critical_events([1,2,3],[.5,1.5,2.5],-1)
+    print(res==3)
+
