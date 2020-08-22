@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
  
 
 setup(name='hypothtst',
-      version='0.0.9',
+      version='0.0.10',
       url='https://github.com/ryu577/hypothtst',
       license='MIT',
       author='Rohit Pandey',

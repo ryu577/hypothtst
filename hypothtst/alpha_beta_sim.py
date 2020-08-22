@@ -6,6 +6,12 @@ from stochproc.hypothesis.rate_test import rateratio_test
 from datetime import datetime
 
 
+def rejectn_rate(p_vals,alpha_hats = np.arange(0,1.00001,0.00001)):    
+    rejectn = np.zeros(len(alpha_hats))
+    for p_val in p_vals:
+        rejectn+=(p_val<=alpha_hats)/len(p_vals)
+    return rejectn
+
 class AlphaBetaSim(object):
     def __init__(self,alpha_hats=None):
         if alpha_hats is not None:
@@ -45,5 +51,4 @@ class AlphaBetaSim(object):
     def beta(self,alpha):
         ix=np.argmin((self.alphas-alpha)**2)
         return self.alphas[ix], self.betas[ix]
-
 

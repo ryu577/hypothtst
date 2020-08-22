@@ -9,9 +9,6 @@ import hypothtst.neg_binom_tst as nbt
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import pyray.plotting.matplot_utils as matplot_utils
-from pyray.plotting.matplot_utils import newline
-
 
 def plot_alpha_hats_w_alpha_determinst_poisson():
 	alphas1,alpha_hats1,pois_mas = xtst.UMPPoisson.alpha_on_determinist_compound_closed_form(\
@@ -143,7 +140,7 @@ def make_qq_plot(p,poisson_mu,black_plot=False,use_heatmap=True,l_vals=None):
                 plt.plot(alpha_hats, alphas, label='l= '+str(l_vals[l]),color=color_list[l])
         p1 = [0,0]
         p2 = [1,1]
-        matplot_utils.newline(p1,p2)
+        #matplot_utils.newline(p1,p2)
         plt.legend()
         #plt.title("QQ plot between compound binomial and deterministically \
         #                compounded process")
