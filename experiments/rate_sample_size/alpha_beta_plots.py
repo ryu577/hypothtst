@@ -5,7 +5,6 @@ from scipy.stats import poisson
 from stochproc.hypothesis.hypoth_tst_simulator import run_simulns
 from stochproc.count_distributions.compound_poisson import CompoundPoisson
 
-
 # mpl.rcParams.update({'text.color' : "white",
 #                         'axes.labelcolor' : "white",
 #                         'xtick.color' : "white",

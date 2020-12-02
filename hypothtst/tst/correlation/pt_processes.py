@@ -3,6 +3,7 @@ from scipy.stats import binom_test
 from algorith.arrays.pt_process.overlap import critical_events
 from algorith.arrays.pt_process.window import critical_interval
 
+
 def correlation_score(ts1,ts2,w,delt,verbose=False):
     """
     ts1 rains on ts2 in a w-window.
