@@ -88,18 +88,18 @@ def beta_plots_poisson_on_poisson():
     plt.show()
 
 
-def beta_plots_t_on_gaussian(n0=10,n1=12):
-    g0 = NormDist(10,3,n0)
-    g1 = NormDist(11,2.5,n1)
+def beta_plots_t_on_gaussian(n0=10, n1=12):
+    g0 = NormDist(10, 3, n0)
+    g1 = NormDist(11, 2.5, n1)
     t_tst_obj0 = ttst.TTest(alternative='two-sided')
     tst_0 = t_tst_obj0.tst
     t_tst_obj1 = ttst.TTest(alternative='greater')
     tst_1 = t_tst_obj1.tst
     #
     gaus = ttst.Norm_null()
-    t_tst_obj3 = ttst.TTest(alternative='two-sided',dist=gaus)
+    t_tst_obj3 = ttst.TTest(alternative='two-sided', dist=gaus)
     tst_2 = t_tst_obj3.tst
-    t_tst_obj4 = ttst.TTest(alternative='greater',dist=gaus)
+    t_tst_obj4 = ttst.TTest(alternative='greater', dist=gaus)
     tst_3 = t_tst_obj4.tst
     ##
     gaus1 = ttst.Norm_null(1,2)
@@ -131,9 +131,9 @@ def beta_plots_t_on_gaussian(n0=10,n1=12):
     alphas8,betas8=ab.alpha_beta_tracer(g0,g1,tst_7,tst_7,n_sim=10000)
     print("sim8 done")
     #plt.plot(alphas1,betas1,label='t_alternate_2sided')
-    plt.plot(alphas2,betas2,label='t_null_distribution')
+    plt.plot(alphas2, betas2, label='t_null_distribution')
     #plt.plot(alphas3,betas3,label='normal_alternate_2sided')
-    plt.plot(alphas4,betas4,label='standard_normal_null_distribution')
+    plt.plot(alphas4, betas4, label='standard_normal_null_distribution')
     #plt.plot(alphas5,betas5,label='norm_non_std_alternate_greater')
     plt.plot(alphas6,betas6,label='non_standard_normal_null_distribution')
     #plt.plot(alphas7,betas7,label='norm_non_std_alternate_greater')
@@ -144,3 +144,48 @@ def beta_plots_t_on_gaussian(n0=10,n1=12):
     plt.show()
 
 
+def same_var_diff_var_t_test(ax, n_prms0=(10, 15, 26), n_prms1=(13, 5, 6)):
+    g0 = NormDist(*n_prms0)
+    g1 = NormDist(*n_prms1)
+    t_tst_obj0 = ttst.TTest_diffvar(alternative='two-sided')
+    tst_0 = t_tst_obj0.tst
+    t_tst_obj1 = ttst.TTest_equalvar(alternative='two-sided')
+    tst_1 = t_tst_obj1.tst
+    ab = AlphaBetaSim()
+    alphas1, betas1 = ab.alpha_beta_tracer(g0, g1, tst_0, n_sim=10000)
+    alphas2, betas2 = ab.alpha_beta_tracer(g0, g1, tst_1, n_sim=10000)
+    ax.plot(alphas1, betas1, label="Different variance test")
+    ax.plot(alphas2, betas2, label="Equal variance test")
+    ax.legend()
+
+
+def plot_grid():
+    ns = np.array([0.3, 1.0, 5.0])
+    sigs = np.array([0.3, 1.0, 3.0])
+    fig, axs = plt.subplots(len(ns),len(sigs))
+    i=-1
+    for n_ratio in ns:
+        i+=1
+        n1 = int(30)
+        n2 = int(n1*n_ratio)
+        j=-1
+        for sig_ratio in sigs:
+            j+=1
+            sig1 = 10
+            sig2 = sig1*sig_ratio
+            prms0 = (10, sig1, n1)
+            prms1 = (13, sig2, n2)
+            ax = axs[i,j]
+            ax.set_title('n1='+str(n1)+' n2=' + str(n2)+' sig1='+str(sig1)+' sig2='+str(sig2))
+            same_var_diff_var_t_test(ax, prms0, prms1)
+            print("Plotted: " + str((i,j)))
+    plt.show()
+
+
+def demo_welch_worse():
+    a1 = norm.rvs(10, 14, size=6)
+    a2 = norm.rvs(13, 3, 100)
+    p_val1 = ttest_ind(a1, a2)[1]
+    p_val2 = ttest_ind(a1, a2, equal_var=False)[1]
+    print("Same var p-val:" + str(p_val1))
+    print("Different var p-val:" + str(p_val2))

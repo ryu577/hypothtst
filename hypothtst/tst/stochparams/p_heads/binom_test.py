@@ -135,24 +135,32 @@ def binary_search(a, d, lo, hi, asc_order=False):
 
 def tst_binom_v2_low():
     p_val1 = binom_test(9,21,0.48)
+    p_val1 = 0.6689672431938848
     p_val2 = binom_test_v2(9,21,0.48)
     p_val3 =  binom_test(10079999,21000000,0.48)
+    p_val3 = 0.979042561004596
     p_val4 =  binom_test_v2(10079999,21000000,0.48)
     p_val5 =  binom_test(10079990,21000000,0.48)
+    p_val5 = 0.9785298857599378
     p_val6 =  binom_test_v2(10079990,21000000,0.48)
     p_val7 = binom_test(4,21,0.48)
+    p_val7 = 0.008139563452105921
     p_val8 = binom_test_v2(4,21,0.48)
     return p_val1 == p_val2
 
 
 def tst_binom_v2_hi():
     p_val1 = binom_test(11,21,0.48)
+    p_val1 = 0.8278629664608201
     p_val2 = binom_test_v2(11,21,0.48)
     p_val3 =  binom_test(10080009,21000000,0.48)
+    p_val3 = 0.9786038762958954
     p_val4 =  binom_test_v2(10080009,21000000,0.48)
     p_val5 =  binom_test(10080017,21000000,0.48)
+    p_val5 = 0.9778567637538729
     p_val6 =  binom_test_v2(10080017,21000000,0.48)
     p_val7 = binom_test(7,21,0.48)
+    p_val7 = 0.19667729017182273
     p_val8 = binom_test_v2(7,21,0.48)
     return p_val1 == p_val2
 
