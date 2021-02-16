@@ -2,9 +2,8 @@ import numpy as np
 from scipy.stats import poisson
 from hypothtst.hypoth_tst_simulator import run_simulns
 from stochproc.count_distributions.compound_poisson import CompoundPoisson
-import hypothtst.rate_test as xtst
+import hypothtst.tst.stochparams.rate.ump as xtst
 import hypothtst.tst.stochparams.p_heads.binom_test as btst
-import hypothtst.aa_plots.compound_poisson_distribns as cpd
 import hypothtst.neg_binom_tst as nbt
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -37,8 +36,6 @@ def plot_alpha_hats_w_alpha_determinst_poisson():
 	plt.show()
 
 
-def qq_plot():
-	cpd.CompBinom.make_qq_plot(0.5,10)
 
 
 def binom_comp_poisson_alpha_beta():
