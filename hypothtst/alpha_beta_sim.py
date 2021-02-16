@@ -24,6 +24,11 @@ class AlphaBetaSim(object):
         self.betas = 1-self.rejection_rate(null,alter,tst_alt,n_sim,debug=debug)
         return self.alphas, self.betas
 
+    def alpha_beta_tracer2(self,null1,null2,alter,tst,n_sim=10000,debug=True):
+        self.alphas = self.rejection_rate(null1,null2,tst,n_sim)
+        self.betas = 1-self.rejection_rate(null1,alter,tst,n_sim,debug=debug)
+        return self.alphas, self.betas
+
     def rejection_rate(self,dist1,dist2,tst,n_sim=10000,debug=False):
         """
         At what rate is the null hypothesis that some property of two

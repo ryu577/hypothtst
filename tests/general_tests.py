@@ -144,18 +144,27 @@ def beta_plots_t_on_gaussian(n0=10, n1=12):
     plt.show()
 
 
-def same_var_diff_var_t_test(ax, n_prms0=(10, 15, 26), n_prms1=(13, 5, 6)):
+def same_var_diff_var_t_test(ax, n_prms0=(10, 15, 26),
+                             n_prms00=(10, 5, 6),
+                             n_prms1=(13, 5, 6)):
     g0 = NormDist(*n_prms0)
+    g00 = NormDist(*n_prms00)
     g1 = NormDist(*n_prms1)
     t_tst_obj0 = ttst.TTest_diffvar(alternative='two-sided')
     tst_0 = t_tst_obj0.tst
     t_tst_obj1 = ttst.TTest_equalvar(alternative='two-sided')
     tst_1 = t_tst_obj1.tst
     ab = AlphaBetaSim()
-    alphas1, betas1 = ab.alpha_beta_tracer(g0, g1, tst_0, n_sim=10000)
-    alphas2, betas2 = ab.alpha_beta_tracer(g0, g1, tst_1, n_sim=10000)
-    ax.plot(alphas1, betas1, label="Different variance test")
-    ax.plot(alphas2, betas2, label="Equal variance test")
+    #alphas1, betas1 = ab.alpha_beta_tracer(g0, g1, tst_0, n_sim=10000)
+    #alphas2, betas2 = ab.alpha_beta_tracer(g0, g1, tst_1, n_sim=10000)
+    #ax.plot(alphas1, betas1, label="Different variance test")
+    #ax.plot(alphas2, betas2, label="Equal variance test")
+    alphas1, betas1 = ab.alpha_beta_tracer2(g0,g00,g1,tst_0)
+    alphas2, betas2 = ab.alpha_beta_tracer2(g0,g00,g1,tst_1)
+    ax.plot(ab.alpha_hats, alphas1, label="Different variance test")
+    ax.plot(ab.alpha_hats, alphas2, label="Equal variance test")
+    #ax.plot(alphas1, betas1, label="Different variance test")
+    #ax.plot(alphas2, betas2, label="Equal variance test")
     ax.legend()
 
 
@@ -174,10 +183,11 @@ def plot_grid():
             sig1 = 10
             sig2 = sig1*sig_ratio
             prms0 = (10, sig1, n1)
+            prms00 = (10, sig2, n2)
             prms1 = (13, sig2, n2)
-            ax = axs[i,j]
+            ax = axs[i, j]
             ax.set_title('n1='+str(n1)+' n2=' + str(n2)+' sig1='+str(sig1)+' sig2='+str(sig2))
-            same_var_diff_var_t_test(ax, prms0, prms1)
+            same_var_diff_var_t_test(ax, prms0, prms00, prms1)
             print("Plotted: " + str((i,j)))
     plt.show()
 
@@ -189,3 +199,12 @@ def demo_welch_worse():
     p_val2 = ttest_ind(a1, a2, equal_var=False)[1]
     print("Same var p-val:" + str(p_val1))
     print("Different var p-val:" + str(p_val2))
+
+cnt1=0; cnt2=0
+for i in range(10000):
+    a1 = norm.rvs(10, 14, size=6)
+    a2 = norm.rvs(10, 3, 100)
+    p_val1 = ttest_ind(a1, a2)[1]
+    p_val2 = ttest_ind(a1, a2, equal_var=False)[1]
+    cnt1+=(p_val1<0.05)
+    cnt2+=(p_val2<0.05)

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='hypothtst',
-      version='0.0.11',
+      version='0.0.12',
       url='https://github.com/ryu577/hypothtst',
       license='MIT',
       author='Rohit Pandey',
@@ -10,4 +10,3 @@ setup(name='hypothtst',
       packages=find_packages(exclude=['tests']),
       long_description=open('README.md').read(),
       zip_safe=False)
-
