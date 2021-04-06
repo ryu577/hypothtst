@@ -15,9 +15,13 @@ def t_test(mu1,mu2,std1,std2,n1,n2,variance=1,dist=t,alternative='two-sided'):
         p_val_adj = 2*dist.cdf(dist.ppf(p_val/2,df,0,1), df,0,variance)
     return p_val, p_val_adj
         
-result=df
-result[["p_value_two_sided_old","p_value_two_sided"]] = result.apply(lambda row : pd.Series(t_test(row.GroupA_mean, row.GroupB_mean, row.GroupA_StdDev, row.GroupB_StdDev, row.GroupA_Count, row.GroupB_Count,row.ConfidenceScoreScaleFactore)), axis=1)
-result["p_value"] = result.apply(lambda row : row.p_value_two_sided/2 if(row.GroupB_mean > row.GroupA_mean) else 1-(row.p_value_two_sided/2), axis=1)
-result["p_value"] = result.apply(lambda row : (1- row.p_value) if (row.HigherValueIsBetter == 1) else (row.p_value), axis=1)
-result["Confidence"] = result.apply(lambda row : (1-row.p_value), axis=1)
-result["Confidence_two_sided"] = result.apply(lambda row : (1-row.p_value_two_sided), axis=1)
+if len(df)>0:
+  result=df
+  result[["p_value_two_sided_old","p_value_two_sided"]] = result.apply(lambda row : pd.Series(t_test(row.GroupA_mean, row.GroupB_mean, row.GroupA_StdDev, row.GroupB_StdDev, row.GroupA_Count, row.GroupB_Count,row.ConfidenceScoreScaleFactore)), axis=1)
+  result["p_value"] = result.apply(lambda row : row.p_value_two_sided/2 if(row.GroupB_mean > row.GroupA_mean) else 1-(row.p_value_two_sided/2), axis=1)
+  result["p_value"] = result.apply(lambda row : (1- row.p_value) if (row.HigherValueIsBetter == 1) else (row.p_value), axis=1)
+  result["Confidence"] = result.apply(lambda row : (1-row.p_value), axis=1)
+  result["Confidence_two_sided"] = result.apply(lambda row : (1-row.p_value_two_sided), axis=1)
+else:
+  cols = np.concatenate((df.columns,["p_value_two_sided_old","p_value_two_sided","p_value","Confidence","Confidence_two_sided"]))
+  result = pd.DataFrame(columns=cols)
