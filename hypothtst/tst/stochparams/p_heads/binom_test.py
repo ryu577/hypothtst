@@ -1,7 +1,7 @@
 from scipy.stats import binom_test, poisson, binom
 from scipy.special import comb
 import numpy as np
-
+from scipy.optimize import root_scalar
 
 def binom_tst_beta(p_null=0.5,p_alt=0.6,n=10,alpha_hat=0.05):
     if n==0:
@@ -98,18 +98,36 @@ def binom_test_v2(x, n=None, p=0.5, alternative='two-sided'):
     elif x < p * n:
         #i = np.arange(np.ceil(p * n), n+1)
         #y = np.sum(binom.pmf(i, n, p) <= d*rerr, axis=0)        
-        y = n-binary_search(a_fn,d*rerr,np.ceil(p * n),n)+1
+        ix = binary_search4(lambda x1:-binom.pmf(x1,n,p),-d*rerr,np.ceil(p * n),n)
+        y = n-ix + int(d*rerr == binom.pmf(ix, n, p))        
         pval = (binom.cdf(x, n, p) +
                 binom.sf(n - y, n, p))
     else:
         #i = np.arange(np.floor(p*n) + 1)
         #y = np.sum(binom.pmf(i, n, p) <= d*rerr, axis=0)
-        y = binary_search(a_fn,d*rerr,0,np.floor(p*n) + 1,True)+1
+        ix = binary_search4(a_fn,d*rerr,0,np.floor(p*n))
+        y = ix + 1
         pval = (binom.cdf(y-1, n, p) +
                 binom.sf(x-1, n, p))
 
     return min(1.0, pval)
 
+
+def _binary_search_for_binom_tst2(d, lo, hi):
+    def f(k, d):
+        k_low = np.minimum(np.floor(k), n-1)
+        a, b = binom.pmf((k_low, k_low+1), n, p)
+        return (0 if (a <= d <= b) or (a >= d >= b)
+                else a + (k - k_low) * (b - a) - d)  # interpolate
+    return root_scalar(f, bracket=(lo, hi), args=(d,)).root
+
+def _binary_search_for_binom_tst3(d, lo, hi):
+    def f(i, d):
+        i_low = np.minimum(np.floor(i), n-1)
+        a, b = binom.pmf((i_low, i_low+1), n, p)
+        c = a + (i - i_low) * (b - a)
+        return c - d
+    return root_scalar(f, bracket=(lo, hi), args=(d,)).root
 
 def binary_search(a, d, lo, hi, asc_order=False):
     while lo < hi:
@@ -128,31 +146,109 @@ def binary_search(a, d, lo, hi, asc_order=False):
         else:
             return mid
     if a(lo)<=d:
+        print("condition 1")
         return lo
     else:
+        print("condition 2")
         return lo-(asc_order-0.5)*2
+
+def binary_search4(a, d, lo, hi):
+    while lo < hi:
+        mid = (lo+hi)//2
+        midval = a(mid)
+        if midval < d:
+            lo = mid+1
+        elif midval > d:
+            hi = mid-1
+        else:
+            return mid
+    if a(lo)<=d:
+        print("condition 1")
+        return lo
+    else:
+        print("condition 2")
+        return lo-1
+
+
+def tst_alternate_search():
+    import time
+    n=50000000; p=0.4
+    d = (binom.pmf(int(n/2-n/4),n,p)+binom.pmf(int(n/2-n/4)+1,n,p))/2
+    tic = time.perf_counter()
+    _binary_search_for_binom_tst2(d,0,np.floor(n*p)+1)
+    toc = time.perf_counter()
+    print(f"Fn took {toc - tic:0.4f} seconds")
+
+    a_fn = lambda x1:binom.pmf(x1, n, p)
+    tic = time.perf_counter()
+    binary_search(a_fn, d, 0, np.floor(n*p)+1, True)
+    toc = time.perf_counter()
+    print(f"Fn took {toc - tic:0.4f} seconds")
 
 
 def tst_binom_v2_low():
     p_val1 = binom_test(9,21,0.48)
     p_val2 = binom_test_v2(9,21,0.48)
+    print(p_val1==p_val2)
     p_val3 =  binom_test(10079999,21000000,0.48)
     p_val4 =  binom_test_v2(10079999,21000000,0.48)
+    print(p_val3==p_val4)
     p_val5 =  binom_test(10079990,21000000,0.48)
     p_val6 =  binom_test_v2(10079990,21000000,0.48)
+    print(p_val5==p_val6)
     p_val7 = binom_test(4,21,0.48)
     p_val8 = binom_test_v2(4,21,0.48)
+    print(p_val7==p_val8)
     return p_val1 == p_val2
 
 
 def tst_binom_v2_hi():
     p_val1 = binom_test(11,21,0.48)
     p_val2 = binom_test_v2(11,21,0.48)
+    print(p_val1==p_val2)
     p_val3 =  binom_test(10080009,21000000,0.48)
     p_val4 =  binom_test_v2(10080009,21000000,0.48)
+    print(p_val3==p_val4)
     p_val5 =  binom_test(10080017,21000000,0.48)
     p_val6 =  binom_test_v2(10080017,21000000,0.48)
+    print(p_val5==p_val6)
     p_val7 = binom_test(7,21,0.48)
     p_val8 = binom_test_v2(7,21,0.48)
+    print(p_val7==p_val8)
     return p_val1 == p_val2
 
+
+def test_binomtest():
+    """
+    Some tests for binomtest. Should print all True when run.
+    """
+    pval1 = binomtest(9, 21, 0.48).pvalue
+    print(pval1 == 0.6689672431938848)
+    p_val3 = binomtest(10079999, 21000000, 0.48).pvalue
+    print(p_val3 == 0.979042561004596)
+    p_val5 = binomtest(10079990, 21000000, 0.48).pvalue
+    print(p_val5 == 0.9785298857599378)
+    p_val7 = binomtest(4, 21, 0.48).pvalue
+    print(p_val7 == 0.008139563452105921)
+    p_val9 = binomtest(11, 21, 0.48).pvalue
+    print(p_val9 == 0.8278629664608201)
+    p_val11 = binomtest(10080009, 21000000, 0.48).pvalue
+    print(p_val11 == 0.9786038762958954)
+    p_val13 = binomtest(10080017, 21000000, 0.48).pvalue
+    print(p_val13 == 0.9778567637538729)
+    p_val15 = binomtest(7, 21, 0.48).pvalue
+    print(p_val15 == 0.19667729017182273)
+
+def tst_edge():
+    pv = binom_test_v2(484, 967, 0.5)
+    print(pv == 0.999999999998212)
+    pv = binom_test_v2(3, 47, 3/47)
+    print(pv==0.9999999999999998)
+    pv = binom_test_v2(13, 46, 13/46)
+    print(pv==0.9999999999999987)
+    pv = binom_test_v2(15, 44, 15/44)
+    print(pv==0.9999999999999989)
+    pv = binom_test_v2(7, 13, 0.5)
+    print(pv==0.9999999999999999)
+    pv = binom_test_v2(6, 11, 0.5)
+    print(pv==0.9999999999999997)
