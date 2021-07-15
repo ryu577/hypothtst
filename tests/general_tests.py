@@ -3,6 +3,7 @@ from scipy.stats import binom_test
 import matplotlib.pyplot as plt
 from hypothtst.alpha_beta_sim import AlphaBetaSim
 import hypothtst.tst.stochparams.mean.t_test as ttst
+from scipy.stats import ttest_ind
 from scipy.stats import poisson, norm, t
 import matplotlib.pyplot as plt
 from hypothtst.sim_utils.mean.normal import NormDist
@@ -161,10 +162,12 @@ def same_var_diff_var_t_test(ax, n_prms0=(10, 15, 26),
     #ax.plot(alphas2, betas2, label="Equal variance test")
     alphas1, betas1 = ab.alpha_beta_tracer2(g0,g00,g1,tst_0)
     alphas2, betas2 = ab.alpha_beta_tracer2(g0,g00,g1,tst_1)
-    ax.plot(ab.alpha_hats, alphas1, label="Different variance test")
-    ax.plot(ab.alpha_hats, alphas2, label="Equal variance test")
-    #ax.plot(alphas1, betas1, label="Different variance test")
-    #ax.plot(alphas2, betas2, label="Equal variance test")
+    #ax.plot(ab.alpha_hats, alphas1, label="Different variance test")
+    #ax.plot(ab.alpha_hats, alphas2, label="Equal variance test")
+    ax.plot(alphas1, betas1, label="Different variance test")
+    ax.plot(alphas2, betas2, label="Equal variance test")
+    #ax.xlabel("Simulated false positive rate")
+    #ax.ylabel("Simulated false negative rate")
     ax.legend()
 
 
@@ -200,11 +203,32 @@ def demo_welch_worse():
     print("Same var p-val:" + str(p_val1))
     print("Different var p-val:" + str(p_val2))
 
-cnt1=0; cnt2=0
-for i in range(10000):
-    a1 = norm.rvs(10, 14, size=6)
-    a2 = norm.rvs(10, 3, 100)
-    p_val1 = ttest_ind(a1, a2)[1]
-    p_val2 = ttest_ind(a1, a2, equal_var=False)[1]
-    cnt1+=(p_val1<0.05)
-    cnt2+=(p_val2<0.05)
+    cnt1=0; cnt2=0
+    for _ in range(10000):
+        a1 = norm.rvs(10, 14, size=6)
+        a2 = norm.rvs(10, 3, 100)
+        p_val1 = ttest_ind(a1, a2)[1]
+        p_val2 = ttest_ind(a1, a2, equal_var=False)[1]
+        cnt1+=(p_val1<0.05)
+        cnt2+=(p_val2<0.05)
+
+
+def fnr_vs_sample_size(sample_size=(10, 10), n_sim=10000, sig_tau=0.05):
+    cnt = 0
+    for _ in range(n_sim):
+        a1 = norm.rvs(10, 3, size=sample_size[0])
+        a2 = norm.rvs(13, 3, size=sample_size[1])
+        p_val1 = ttest_ind(a1, a2)[1]
+        cnt += (p_val1 > sig_tau)
+    fnr = cnt/n_sim
+    return fnr
+
+
+def get_curve():
+    fnrs = []
+    for size in np.arange(3, 100):
+        fnr = fnr_vs_sample_size((size, size))
+        fnrs.append(fnr)
+    plt.plot(np.arange(3, 100), fnrs)
+    plt.show()
+    return fnrs
