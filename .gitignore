@@ -1,0 +1,6 @@
+__pycache__/
+build/*
+dist/*
+hypothtst/__pycache__/*
+hypothtst.egg-info/*
+hypothtst/tst/stochparams/__pycache__/*
