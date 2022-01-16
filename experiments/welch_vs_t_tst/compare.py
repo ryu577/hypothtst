@@ -9,89 +9,8 @@ import matplotlib.pyplot as plt
 from hypothtst.sim_utils.mean.normal import NormDist
 
 
-def tst_simultn():
-    #po0=PoissonDist(5)
-    #po1=PoissonDist(10)
-    po0 = poisson(5); po1 = poisson(10)
-    t0=5; t1=10
-    ## A hypothesis test that takes the two samples as arguments.
-    tst = lambda n0,n1:binom_test(n1,n0+n1,t1/(t0+t1),\
-                    alternative='greater')
-    ab = AlphaBetaSim()
-    alphas,betas=ab.alpha_beta_tracer(po0,po1,tst,tst,n_sim=10000)
-    plt.plot(alphas,betas)
-    plt.show()
 
-
-def p_val_uniform():
-    p_vals = []
-    for _ in range(1000):
-        n0=poisson.rvs(100)
-        n1=poisson.rvs(100)
-        p_val = binom_test(n0,n1+n0,.5,alternative='greater')
-        p_vals.append(p_val)
-    plt.hist(p_vals)
-
-
-def beta_plots_poisson_on_poisson():
-    t0=10; t1=3
-    po0=poisson(2*t0); #po0.random_state = np.random.RandomState(seed=20)
-    po1=poisson(3*t1); #po1.random_state = np.random.RandomState(seed=50)
-    ## A hypothesis test that takes the two samples as arguments.
-    tst_1 = lambda n0,n1:binom_test(n1,n0+n1,t1/(t0+t1),\
-                    alternative='greater')
-    tst_1_null = lambda n0,n1:binom_test(n1,n0+n1,0.5,\
-                    alternative='greater')
-    tst_2 = lambda n0,n1:binom_test(n1/3,n0/3+n1/3,t1/(t0+t1),\
-                    alternative='greater')
-    tst_2_null = lambda n0,n1:binom_test(n1/3,n0/3+n1/3,0.5,\
-                    alternative='greater')
-    tst_3 = lambda n0,n1:binom_test(n1/.3,n0/.3+n1/.3,t1/(t0+t1),\
-                    alternative='greater')
-    tst_3_null = lambda n0,n1:binom_test(n1/.3,n0/.3+n1/.3,0.5,\
-                    alternative='greater')
-    tst_4 = lambda n0,n1:binom_test(n1,n0+n1,t1/(t0+t1),\
-                    alternative='two-sided')
-    tst_4_null = lambda n0,n1:binom_test(n1,n0+n1,0.5,\
-                    alternative='two-sided')
-    tst_5 = lambda n0,n1:binom_test(n1/3,n0/3+n1/3,t1/(t0+t1),\
-                    alternative='two-sided')
-    tst_5_null = lambda n0,n1:binom_test(n1/3,n0/3+n1/3,0.5,\
-                    alternative='two-sided')
-    tst_6 = lambda n0,n1:binom_test(n1/2,n0/2+n1/2,t1/(t0+t1),\
-                    alternative='two-sided')
-    tst_6_null = lambda n0,n1:binom_test(n1/2,n0/2+n1/2,0.5,\
-                    alternative='two-sided')
-    tst_7 = lambda n0,n1:binom_test(n1/.1,n0/.1+n1/.1,t1/(t0+t1),\
-                    alternative='two-sided')
-    tst_7_null = lambda n0,n1:binom_test(n1/.1,n0/.1+n1/.1,0.5,\
-                    alternative='two-sided')
-    ab1 = AlphaBetaSim()
-    alphas1,betas1=ab1.alpha_beta_tracer(po0,po1,tst_1_null,tst_1,n_sim=10000)
-    print("first sim")
-    alphas2,betas2=ab1.alpha_beta_tracer(po0,po1,tst_2_null,tst_2,n_sim=10000)
-    print("second sim")
-    alphas3,betas3=ab1.alpha_beta_tracer(po0,po1,tst_3_null,tst_3,n_sim=10000)
-    print("third sim")
-    alphas4,betas4=ab1.alpha_beta_tracer(po0,po1,tst_4_null,tst_4,n_sim=10000)
-    print("fourth sim")
-    alphas5,betas5=ab1.alpha_beta_tracer(po0,po1,tst_5_null,tst_5,n_sim=10000)
-    print("fifth sim")
-    alphas6,betas6=ab1.alpha_beta_tracer(po0,po1,tst_6_null,tst_6,n_sim=10000)
-    print("sixth sim")
-    alphas7,betas7=ab1.alpha_beta_tracer(po0,po1,tst_7_null,tst_7,n_sim=10000)
-    print("seventh sim")
-    plt.plot(alphas1,betas1,label='sc:1_greater')
-    plt.plot(alphas2,betas2,label='sc:3_greater')
-    plt.plot(alphas3,betas3,label='sc:.3_greater')
-    plt.plot(alphas4,betas4,label='sc:1_two_sided')
-    plt.plot(alphas5,betas5,label='sc:3_two_sided')
-    plt.plot(alphas6,betas6,label='sc:2_two_sided')
-    plt.plot(alphas7,betas7,label='sc:.1_two_sided')
-    plt.legend()
-    plt.show()
-
-
+## Note copied from tests/experiments/general_tests.py without validating for now.
 def beta_plots_t_on_gaussian(n0=10, n1=12):
     g0 = NormDist(10, 3, n0)
     g1 = NormDist(11, 2.5, n1)
@@ -177,15 +96,15 @@ def same_var_diff_var_t_test(ax, n_prms0=(10, 15, 26),
 def plot_grid():
     ns = np.array([0.3, 1.0, 5.0])
     sigs = np.array([0.3, 1.0, 3.0])
-    fig, axs = plt.subplots(len(ns), len(sigs))
-    i = -1
+    fig, axs = plt.subplots(len(ns),len(sigs))
+    i=-1
     for n_ratio in ns:
-        i += 1
+        i+=1
         n1 = int(30)
         n2 = int(n1*n_ratio)
-        j = -1
+        j=-1
         for sig_ratio in sigs:
-            j += 1
+            j+=1
             sig1 = 10
             sig2 = sig1*sig_ratio
             prms0 = (10, sig1, n1)
@@ -216,32 +135,22 @@ def demo_welch_worse():
         cnt2+=(p_val2<0.05)
 
 
-def fnr_vs_sample_size(sample_size=(10, 10),
-                       n_sim=5000, sig_tau=0.05,
-                       st_devs=500):
+def fnr_vs_sample_size(sample_size=(10, 10), n_sim=10000, sig_tau=0.05):
     cnt = 0
     for _ in range(n_sim):
-        a1 = norm.rvs(10e3, st_devs, size=sample_size[0])
-        a2 = norm.rvs(9e3, st_devs, size=sample_size[1])
+        a1 = norm.rvs(10, 3, size=sample_size[0])
+        a2 = norm.rvs(13, 3, size=sample_size[1])
         p_val1 = ttest_ind(a1, a2)[1]
         cnt += (p_val1 > sig_tau)
     fnr = cnt/n_sim
     return fnr
 
 
-def get_curve(st_devs=500):
+def get_curve():
     fnrs = []
-    for size in np.arange(3, 20):
-        fnr = fnr_vs_sample_size((size, size), sig_tau=0.01,
-                                st_devs=st_devs)
+    for size in np.arange(3, 100):
+        fnr = fnr_vs_sample_size((size, size))
         fnrs.append(fnr)
-    plot_curve(np.arange(3, 20), fnrs, st_devs)
+    plt.plot(np.arange(3, 100), fnrs)
+    plt.show()
     return fnrs
-
-
-def plot_curve(sizes, fnrs, st_devs):
-    plt.plot(sizes, fnrs, label="Standard deviations: " + str(st_devs))
-    plt.xlabel("Number of client-server pairs in both groups")
-    plt.ylabel("False negative rate given false positive rate 1%")
-    plt.legend()
-    #plt.show()

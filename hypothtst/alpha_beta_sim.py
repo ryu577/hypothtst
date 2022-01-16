@@ -7,6 +7,7 @@ def rejectn_rate(p_vals, alpha_hats=np.arange(0, 1.00001, 0.00001)):
         rejectn += (p_val <= alpha_hats) / len(p_vals)
     return rejectn
 
+
 class AlphaBetaSim(object):
     def __init__(self, alpha_hats=None):
         if alpha_hats is not None:
@@ -14,7 +15,7 @@ class AlphaBetaSim(object):
         else:
             self.alpha_hats = np.concatenate((np.arange(\
                 0.000000000001,0.0099,0.0000001),
-                np.arange(0.01,1.00,0.001), 
+                np.arange(0.01,1.00,0.001),
                 np.arange(0.991,1.00,0.001)),axis=0)
 
     def alpha_beta_tracer(self,null,alter,tst_null,tst_alt=None,n_sim=10000,debug=True):
