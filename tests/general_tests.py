@@ -8,6 +8,7 @@ from scipy.stats import poisson, norm, t
 import matplotlib.pyplot as plt
 from hypothtst.sim_utils.mean.normal import NormDist
 
+
 def tst_simultn():
     #po0=PoissonDist(5)
     #po1=PoissonDist(10)
@@ -174,15 +175,15 @@ def same_var_diff_var_t_test(ax, n_prms0=(10, 15, 26),
 def plot_grid():
     ns = np.array([0.3, 1.0, 5.0])
     sigs = np.array([0.3, 1.0, 3.0])
-    fig, axs = plt.subplots(len(ns),len(sigs))
-    i=-1
+    fig, axs = plt.subplots(len(ns), len(sigs))
+    i = -1
     for n_ratio in ns:
-        i+=1
+        i += 1
         n1 = int(30)
         n2 = int(n1*n_ratio)
-        j=-1
+        j = -1
         for sig_ratio in sigs:
-            j+=1
+            j += 1
             sig1 = 10
             sig2 = sig1*sig_ratio
             prms0 = (10, sig1, n1)
@@ -213,22 +214,32 @@ def demo_welch_worse():
         cnt2+=(p_val2<0.05)
 
 
-def fnr_vs_sample_size(sample_size=(10, 10), n_sim=10000, sig_tau=0.05):
+def fnr_vs_sample_size(sample_size=(10, 10),
+                       n_sim=5000, sig_tau=0.05,
+                       st_devs=500):
     cnt = 0
     for _ in range(n_sim):
-        a1 = norm.rvs(10, 3, size=sample_size[0])
-        a2 = norm.rvs(13, 3, size=sample_size[1])
+        a1 = norm.rvs(10e3, st_devs, size=sample_size[0])
+        a2 = norm.rvs(9e3, st_devs, size=sample_size[1])
         p_val1 = ttest_ind(a1, a2)[1]
         cnt += (p_val1 > sig_tau)
     fnr = cnt/n_sim
     return fnr
 
 
-def get_curve():
+def get_curve(st_devs=500):
     fnrs = []
-    for size in np.arange(3, 100):
-        fnr = fnr_vs_sample_size((size, size))
+    for size in np.arange(3, 20):
+        fnr = fnr_vs_sample_size((size, size), sig_tau=0.01,
+                                st_devs=st_devs)
         fnrs.append(fnr)
-    plt.plot(np.arange(3, 100), fnrs)
-    plt.show()
+    plot_curve(np.arange(3, 20), fnrs, st_devs)
     return fnrs
+
+
+def plot_curve(sizes, fnrs, st_devs):
+    plt.plot(sizes, fnrs, label="Standard deviations: " + str(st_devs))
+    plt.xlabel("Number of client-server pairs in both groups")
+    plt.ylabel("False negative rate given false positive rate 1%")
+    plt.legend()
+    #plt.show()
