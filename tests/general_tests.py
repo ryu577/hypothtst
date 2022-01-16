@@ -8,6 +8,7 @@ from scipy.stats import poisson, norm, t
 import matplotlib.pyplot as plt
 from hypothtst.sim_utils.mean.normal import NormDist
 
+
 def tst_simultn():
     #po0=PoissonDist(5)
     #po1=PoissonDist(10)
@@ -21,6 +22,7 @@ def tst_simultn():
     plt.plot(alphas,betas)
     plt.show()
 
+
 def p_val_uniform():
     p_vals = []
     for _ in range(1000):
@@ -29,6 +31,7 @@ def p_val_uniform():
         p_val = binom_test(n0,n1+n0,.5,alternative='greater')
         p_vals.append(p_val)
     plt.hist(p_vals)
+
 
 def beta_plots_poisson_on_poisson():
     t0=10; t1=3
