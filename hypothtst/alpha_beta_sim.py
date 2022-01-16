@@ -7,6 +7,7 @@ def rejectn_rate(p_vals, alpha_hats=np.arange(0, 1.00001, 0.00001)):
         rejectn += (p_val <= alpha_hats) / len(p_vals)
     return rejectn
 
+
 class AlphaBetaSim(object):
     def __init__(self, alpha_hats=None):
         if alpha_hats is not None:
